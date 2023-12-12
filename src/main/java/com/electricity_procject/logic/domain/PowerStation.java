@@ -1,22 +1,24 @@
 package com.electricity_procject.logic.domain;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDateTime;
 
 @SuperBuilder
 @AllArgsConstructor
+@RequiredArgsConstructor
 @NoArgsConstructor
 @Getter
 @Setter
 public class PowerStation {
     private Long id;
+    @NonNull
     private String ipv6;
+    @NonNull
     private String state;
+    @NonNull
     private LocalDateTime creationTime;
+    @NonNull
     private double maxPower;
 }
