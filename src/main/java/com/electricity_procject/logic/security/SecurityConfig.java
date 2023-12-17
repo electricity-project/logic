@@ -23,7 +23,11 @@ public class SecurityConfig {
         httpSecurity
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/public/**").permitAll()
+                        .requestMatchers("/power-production").permitAll()
+                        .requestMatchers("/power-station").permitAll()
+                        .requestMatchers("/aggregated-power-production").permitAll()
+                        .requestMatchers("/login").permitAll()
+                        .requestMatchers("/user").permitAll() //TODO: change to ADMIN
                         .anyRequest().authenticated());
         httpSecurity.oauth2ResourceServer(oauth2 -> oauth2.jwt(jwtConfigurer ->
                 jwtConfigurer.jwtAuthenticationConverter(jwtAuthConverter)));

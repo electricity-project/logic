@@ -11,7 +11,7 @@ public class KeycloakConfig {
 //    public static String serverUrl = "http://keycloak:9000"; //in deployment
     public static String realm = "master";
     static String clientId = "admin-cli";
-    static String clientSecret = "M6LgZ4Q5t303SZ77zcG5SqhOEKZD8DEk";
+    static String clientSecret = "G1ghnDccenhUc6QgBQFVNDRkPylqabGW";
     static String userName = "admin";
     static String password = "password";
 
