@@ -7,17 +7,12 @@ import org.keycloak.admin.client.KeycloakBuilder;
 
 public class KeycloakConfig {
     static Keycloak keycloak = null;
-//    @Value("${keycloak.server-url}")
-    static String serverUrl = "http://localhost:9000";
-//    @Value("${keycloak.master-realm}")
+    public static String serverUrl = "http://localhost:9000"; //temporary
+//    public static String serverUrl = "http://keycloak:9000"; //in deployment
     public static String realm = "master";
-//    @Value("${keycloak.clientid}")
     static String clientId = "admin-cli";
-//    @Value("${keycloak.client-secret}")
     static String clientSecret = "M6LgZ4Q5t303SZ77zcG5SqhOEKZD8DEk";
-//    @Value("${keycloak.username}")
     static String userName = "admin";
-//    @Value("${keycloak.password}")
     static String password = "password";
 
     public KeycloakConfig() {
