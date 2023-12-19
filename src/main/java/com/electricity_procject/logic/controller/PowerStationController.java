@@ -1,12 +1,15 @@
 package com.electricity_procject.logic.controller;
 
 import com.electricity_procject.logic.domain.PowerStation;
+import com.electricity_procject.logic.domain.PowerStationState;
 import com.electricity_procject.logic.service.PowerStationService;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/power-station")
@@ -18,12 +21,17 @@ public class PowerStationController {
     }
 
     @GetMapping
-    public ResponseEntity<List<PowerStation>> getPowerStations(Pageable pageable) {
+    public ResponseEntity<Page<PowerStation>> getPowerStations(Pageable pageable) {
         return ResponseEntity.ok(powerStationService.getPowerStations(pageable));
     }
 
     @PostMapping
     public ResponseEntity<PowerStation> connectPowerStation(@RequestBody PowerStation powerStation) {
         return ResponseEntity.ok(powerStationService.connectPowerStation(powerStation));
+    }
+
+    @GetMapping("/count")
+    public ResponseEntity<Map<PowerStationState, Long>> getPowerStationsCount() {
+        return ResponseEntity.ok(powerStationService.getPowerStationCount());
     }
 }

@@ -21,4 +21,7 @@ public class PowerStation {
     private LocalDateTime creationTime;
     @NonNull
     private double maxPower;
+    private String type;
+    private double optimalTemperature;
+    private Long bladeLength;
 }
