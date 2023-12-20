@@ -8,7 +8,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -31,7 +30,7 @@ public class PowerStationController {
     }
 
     @GetMapping("/count")
-    public ResponseEntity<Map<PowerStationState, Long>> getPowerStationsCount() {
+    public ResponseEntity<Map<PowerStationState, Integer>> getPowerStationsCount() {
         return ResponseEntity.ok(powerStationService.getPowerStationCount());
     }
 }

@@ -9,16 +9,15 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
-import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class PowerStationService {
     @Value("${api.base.url}")
     private String baseUrl;
+
     public Page<PowerStation> getPowerStations(Pageable pageable) {
         WebClient webClient = WebClient.create(baseUrl);
         String endpointUrl = "/calculations-db-access/power-station";
@@ -32,10 +31,10 @@ public class PowerStationService {
                 .retrieve()
                 .bodyToFlux(PowerStation.class)
                 .map(powerStation -> {
-                    if(powerStation.getBladeLength() != null) {
+                    if (powerStation.getBladeLength() != null) {
                         powerStation.setType("WIND TURBINE");
                     } else {
-                      powerStation.setType("SOLAR PANEL");
+                        powerStation.setType("SOLAR PANEL");
                     }
                     return powerStation;
                 })
@@ -57,7 +56,7 @@ public class PowerStationService {
                 .block();
     }
 
-    public Map<PowerStationState, Long> getPowerStationCount() {
+    public Map<PowerStationState, Integer> getPowerStationCount() {
         WebClient webClient = WebClient.create(baseUrl);
         String endpointUrl = "/calculations-db-access/power-station/count";
         return webClient.get()
@@ -68,10 +67,9 @@ public class PowerStationService {
                 .block();
     }
 
-    private Map<PowerStationState, Long> convertToPowerStationStateMap(Map<String, Long> responseMap) {
+    private Map<PowerStationState, Integer> convertToPowerStationStateMap(Map<String, Integer> responseMap) {
         return responseMap.entrySet().stream()
-                .collect(
-                        java.util.stream.Collectors.toMap(
+                .collect(Collectors.toMap(
                                 entry -> PowerStationState.valueOf(entry.getKey()),
                                 Map.Entry::getValue
                         )
