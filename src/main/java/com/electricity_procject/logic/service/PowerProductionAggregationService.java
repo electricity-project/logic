@@ -11,7 +11,7 @@ import java.util.List;
 
 @Service
 public class PowerProductionAggregationService {
-    @Value("${api.base-url}")
+    @Value("${api.base.url}")
     private String baseUrl;
     public List<PowerProductionAggregation> getAggregatedPowerProduction(AggregationPeriodType aggregationPeriodType,
                                                                          Integer duration) {

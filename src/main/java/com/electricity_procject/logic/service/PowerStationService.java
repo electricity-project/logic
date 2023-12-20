@@ -17,7 +17,7 @@ import java.util.Map;
 
 @Service
 public class PowerStationService {
-    @Value("${api.base-url}")
+    @Value("${api.base.url}")
     private String baseUrl;
     public Page<PowerStation> getPowerStations(Pageable pageable) {
         WebClient webClient = WebClient.create(baseUrl);

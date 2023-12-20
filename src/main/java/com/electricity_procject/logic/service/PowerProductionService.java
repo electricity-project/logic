@@ -11,7 +11,7 @@ import java.util.List;
 
 @Service
 public class PowerProductionService {
-    @Value("${api.base-url}")
+    @Value("${api.base.url}")
     private String baseUrl;
 
     public List<PowerProduction> getPowerProduction(String ipv6, Pageable pageable) {
