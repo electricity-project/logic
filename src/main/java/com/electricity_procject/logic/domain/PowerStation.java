@@ -20,8 +20,8 @@ public class PowerStation {
     @NonNull
     private LocalDateTime creationTime;
     @NonNull
-    private double maxPower;
-    private String type;
+    private Double maxPower;
+    private PowerStationType type;
     private double optimalTemperature;
     private Long bladeLength;
 }

@@ -2,6 +2,7 @@ package com.electricity_procject.logic.service;
 
 import com.electricity_procject.logic.domain.PowerStation;
 import com.electricity_procject.logic.domain.PowerStationState;
+import com.electricity_procject.logic.domain.PowerStationType;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -32,9 +33,9 @@ public class PowerStationService {
                 .bodyToFlux(PowerStation.class)
                 .map(powerStation -> {
                     if (powerStation.getBladeLength() != null) {
-                        powerStation.setType("WIND TURBINE");
+                        powerStation.setType(PowerStationType.WIND_TURBINE);
                     } else {
-                        powerStation.setType("SOLAR PANEL");
+                        powerStation.setType(PowerStationType.SOLAR_PANEL);
                     }
                     return powerStation;
                 })
