@@ -1,7 +1,6 @@
 package com.electricity_procject.logic.service;
 
 import com.electricity_procject.logic.domain.PowerProduction;
-import com.electricity_procject.logic.domain.PowerStation;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -14,13 +13,19 @@ public class PowerProductionService {
     @Value("${api.base.url}")
     private String baseUrl;
 
-    public List<PowerProduction> getPowerProduction(String ipv6, Pageable pageable) {
+    public List<PowerProduction> getPowerProduction(String ipv6,
+                                                    Integer duration,
+                                                    AggregationPeriodType aggregationPeriodType,
+                                                    Pageable pageable) {
         WebClient webClient = WebClient.create(baseUrl);
-        String endpointUrl = "/calculations-db-access/power-production/" + ipv6 ;
+        String endpointUrl = "/calculations-db-access/power-production/";
         return webClient
                 .get()
                 .uri(uriBuilder -> uriBuilder
                         .path(endpointUrl)
+                        .queryParam("ipv6", ipv6)
+                        .queryParam("periodType", aggregationPeriodType.toString())
+                        .queryParam("duration", duration)
                         .queryParam("page", pageable.getPageNumber())
                         .queryParam("size", pageable.getPageSize())
                         .build())
@@ -29,4 +34,6 @@ public class PowerProductionService {
                 .collectList()
                 .block();
     }
+
+
 }
