@@ -1,6 +1,7 @@
 package com.electricity_procject.logic.controller;
 
 import com.electricity_procject.logic.domain.PowerProduction;
+import com.electricity_procject.logic.service.AggregationPeriodType;
 import com.electricity_procject.logic.service.PowerProductionService;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -21,7 +22,14 @@ public class PowerProductionController {
     }
 
     @GetMapping
-    public ResponseEntity<List<PowerProduction>> getPowerProduction(@RequestParam String ipv6, Pageable pageable) {
-        return ResponseEntity.ok(powerProductionService.getPowerProduction(ipv6, pageable));
+    public ResponseEntity<List<PowerProduction>> getPowerProduction(@RequestParam String ipv6,
+                                                                    @RequestParam Integer duration,
+                                                                    @RequestParam AggregationPeriodType aggregationPeriodType,
+                                                                    Pageable pageable) {
+        return ResponseEntity.ok(powerProductionService.getPowerProduction(
+                ipv6,
+                duration,
+                aggregationPeriodType,
+                pageable));
     }
 }

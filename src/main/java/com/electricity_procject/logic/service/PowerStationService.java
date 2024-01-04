@@ -8,7 +8,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.Map;
@@ -21,7 +20,7 @@ public class PowerStationService {
 
     public Page<PowerStation> getPowerStations(Pageable pageable) {
         WebClient webClient = WebClient.create(baseUrl);
-        String endpointUrl = "/calculations-db-access/power-station";
+        String endpointUrl = "/calculations-db-access/power-station/all";
         return webClient
                 .get()
                 .uri(uriBuilder -> uriBuilder
@@ -44,17 +43,67 @@ public class PowerStationService {
                 .block();
     }
 
-    public PowerStation connectPowerStation(PowerStation powerStation) {
+    //TODO: getPowerStation
+
+    //TODO: validatePowerStation
+
+//    public PowerStation getPowerStation() {
+//        WebClient webClient = WebClient.create(baseUrl);
+//        String endpointUrl = "/calculations-db-access/power-station";
+//        return webClient
+//                .get()
+//                .uri(uriBuilder -> uriBuilder
+//                        .path(endpointUrl)
+//                        .build())
+//                .retrieve()
+//    }
+
+    public void connectPowerStation(String ipv6) {
         WebClient webClient = WebClient.create(baseUrl);
-        String endpointUrl = "/calculations-db-access/power-station";
-        return webClient
-                .post()
-                .uri(endpointUrl)
-                .header("Content-Type", "application/json")
-                .body(BodyInserters.fromValue(powerStation))
-                .retrieve()
-                .bodyToMono(PowerStation.class)
-                .block();
+        String endpointUrl = "/mediative-module/api/connect";
+        webClient
+                .get()
+                .uri(uriBuilder -> uriBuilder
+                        .path(endpointUrl)
+                        .queryParam("ipv6Address", ipv6)
+                        .build())
+                .retrieve();
+    }
+
+    public void disconnectPowerStation(String ipv6) {
+        WebClient webClient = WebClient.create(baseUrl);
+        String endpointUrl = "/mediative-module/api/disconnect";
+        webClient
+                .get()
+                .uri(uriBuilder -> uriBuilder
+                        .path(endpointUrl)
+                        .queryParam("ipv6Address", ipv6)
+                        .build())
+                .retrieve();
+    }
+
+    public void startPowerStation(String ipv6) {
+        WebClient webClient = WebClient.create(baseUrl);
+        String endpointUrl = "/mediative-module/api/start";
+        webClient
+                .get()
+                .uri(uriBuilder -> uriBuilder
+                        .path(endpointUrl)
+                        .queryParam("ipv6Address", ipv6)
+                        .build())
+                .retrieve();
+    }
+
+    public void stopPowerStation(String ipv6) {
+        WebClient webClient = WebClient.create(baseUrl);
+        String endpointUrl = "/mediative-module/api/stop";
+        webClient
+                .get()
+                .uri(uriBuilder -> uriBuilder
+                        .path(endpointUrl)
+                        .queryParam("ipv6Address", ipv6)
+                        .build())
+                .retrieve();
     }
 
     public Map<PowerStationState, Integer> getPowerStationCount() {

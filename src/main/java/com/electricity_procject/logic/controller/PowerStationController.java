@@ -24,9 +24,28 @@ public class PowerStationController {
         return ResponseEntity.ok(powerStationService.getPowerStations(pageable));
     }
 
-    @PostMapping
-    public ResponseEntity<PowerStation> connectPowerStation(@RequestBody PowerStation powerStation) {
-        return ResponseEntity.ok(powerStationService.connectPowerStation(powerStation));
+    @GetMapping("/connect")
+    public ResponseEntity<Void> connectPowerStation(@RequestParam String ipv6) {
+        powerStationService.connectPowerStation(ipv6);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/disconnect")
+    public ResponseEntity<Void> disconnectPowerStation(@RequestParam String ipv6) {
+        powerStationService.disconnectPowerStation(ipv6);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/start")
+    public ResponseEntity<Void> startPowerStation(@RequestParam String ipv6) {
+        powerStationService.startPowerStation(ipv6);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/stop")
+    public ResponseEntity<Void> stopPowerStation(@RequestParam String ipv6) {
+        powerStationService.stopPowerStation(ipv6);
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/count")
