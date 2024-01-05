@@ -1,9 +1,12 @@
 package com.electricity_procject.logic.controller;
 
+import com.electricity_procject.logic.domain.User;
 import com.electricity_procject.logic.domain.UserRequest;
-import com.electricity_procject.logic.domain.UserUpdateRequest;
+import com.electricity_procject.logic.domain.UserResponse;
 import com.electricity_procject.logic.service.UserService;
-import org.keycloak.representations.idm.UserRepresentation;
+import jakarta.ws.rs.BadRequestException;
+import jakarta.ws.rs.ClientErrorException;
+import jakarta.ws.rs.NotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -22,35 +25,57 @@ public class UserController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
-    public ResponseEntity<UserRepresentation> addUser(@RequestBody UserRequest userRequest) {
-        UserRepresentation userRepresentation = userService.addUser(userRequest);
-        return ResponseEntity.ok(userRepresentation);
+    public ResponseEntity<UserResponse> addUser(@RequestBody UserRequest userRequest) {
+        UserResponse userResponse = userService.addUser(userRequest);
+        return ResponseEntity.ok(userResponse);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
-    public ResponseEntity<Page<UserRepresentation>> getUsers(Pageable pageable) {
+    public ResponseEntity<Page<User>> getUsers(Pageable pageable) {
         return ResponseEntity.ok(userService.getUsers(pageable));
     }
 
+    @GetMapping("/info")
+    public ResponseEntity<User> getUser(@RequestParam String username) {
+        return ResponseEntity.ok(userService.getUser(username));
+    }
+
     @PreAuthorize("hasRole('ADMIN')")
-    @PutMapping
-    public ResponseEntity<UserRepresentation> updateUser(@RequestBody UserUpdateRequest request,
-                                                         @RequestParam String userId) {
-        UserRepresentation userRepresentation = userService.updateUser(request, userId);
-        return ResponseEntity.ok(userRepresentation);
+    @PutMapping("/update")
+    public ResponseEntity<UserResponse> updateUser(@RequestBody UserRequest request,
+                                                   @RequestParam String userId) {
+        UserResponse userResponse = userService.updateUser(request, userId);
+        return ResponseEntity.ok(userResponse);
     }
 
-    @PatchMapping("/password")
-    public ResponseEntity<UserRepresentation> resetPassword(@RequestParam String userId,
-                                                            @RequestParam String password) {
-        UserRepresentation userRepresentation = userService.resetPassword(userId, password);
-        return ResponseEntity.ok(userRepresentation);
+    @PostMapping("/password")
+    public ResponseEntity<UserResponse> resetPassword(@RequestParam String userId,
+                                                      @RequestParam String password) {
+        UserResponse userResponse = userService.resetPassword(userId, password);
+        return ResponseEntity.ok(userResponse);
     }
 
-    @ExceptionHandler(IllegalArgumentException.class)
+    @DeleteMapping
+    public ResponseEntity<?> deleteUser(@RequestParam String userId) {
+        userService.deleteUser(userId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/validate")
+    public ResponseEntity<Boolean> validateUsername(@RequestParam String username) {
+        return ResponseEntity.ok(userService.validateUsername(username));
+    }
+
+    @ExceptionHandler({IllegalArgumentException.class, BadRequestException.class, ClientErrorException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResponseEntity<String> handleIllegalArgumentException(IllegalArgumentException exception) {
+        return ResponseEntity.badRequest().body(exception.getMessage());
+    }
+
+    @ExceptionHandler(NotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ResponseEntity<String> handleNotFoundException(NotFoundException exception) {
         return ResponseEntity.badRequest().body(exception.getMessage());
     }
 }
