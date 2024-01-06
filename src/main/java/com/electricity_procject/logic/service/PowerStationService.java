@@ -1,13 +1,17 @@
 package com.electricity_procject.logic.service;
 
 import com.electricity_procject.logic.domain.PowerStation;
+import com.electricity_procject.logic.domain.PowerStationFilter;
 import com.electricity_procject.logic.domain.PowerStationState;
 import com.electricity_procject.logic.domain.PowerStationType;
+import jakarta.ws.rs.core.HttpHeaders;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.Map;
@@ -18,16 +22,18 @@ public class PowerStationService {
     @Value("${api.base.url}")
     private String baseUrl;
 
-    public Page<PowerStation> getPowerStations(Pageable pageable) {
+    public Page<PowerStation> getPowerStations(PowerStationFilter powerStationFilter, Pageable pageable) {
         WebClient webClient = WebClient.create(baseUrl);
         String endpointUrl = "/calculations-db-access/power-station/all";
         return webClient
-                .get()
+                .post()
                 .uri(uriBuilder -> uriBuilder
                         .path(endpointUrl)
                         .queryParam("page", pageable.getPageNumber())
                         .queryParam("size", pageable.getPageSize())
                         .build())
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .body(BodyInserters.fromValue(powerStationFilter))
                 .retrieve()
                 .bodyToFlux(PowerStation.class)
                 .map(powerStation -> {

@@ -15,8 +15,7 @@ public class PowerProductionService {
 
     public List<PowerProduction> getPowerProduction(String ipv6,
                                                     Integer duration,
-                                                    AggregationPeriodType aggregationPeriodType,
-                                                    Pageable pageable) {
+                                                    AggregationPeriodType aggregationPeriodType) {
         WebClient webClient = WebClient.create(baseUrl);
         String endpointUrl = "/calculations-db-access/power-production/";
         return webClient
@@ -26,8 +25,6 @@ public class PowerProductionService {
                         .queryParam("ipv6", ipv6)
                         .queryParam("periodType", aggregationPeriodType.toString())
                         .queryParam("duration", duration)
-                        .queryParam("page", pageable.getPageNumber())
-                        .queryParam("size", pageable.getPageSize())
                         .build())
                 .retrieve()
                 .bodyToFlux(PowerProduction.class)

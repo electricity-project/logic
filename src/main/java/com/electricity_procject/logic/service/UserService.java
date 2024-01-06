@@ -18,6 +18,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -81,6 +84,19 @@ public class UserService {
         throw new NotFoundException("User with this username not found");
     }
 
+    public User getCurrentUser() {
+        RealmResource realmResource = KeycloakConfig.getInstance().realm(szozeRealm);
+        UsersResource usersResource = realmResource.users();
+        JwtAuthenticationToken authenticationToken = (JwtAuthenticationToken) SecurityContextHolder.getContext().getAuthentication();
+        Jwt jwt = (Jwt) authenticationToken.getCredentials();
+        String currentUserId = (String) jwt.getClaims().get("sub");
+        UserRepresentation userRepresentation = usersResource.get(currentUserId).toRepresentation();
+        return new User(
+                userRepresentation.getId(),
+                userRepresentation.getUsername(),
+                usersResource.get(userRepresentation.getId()).roles().getAll().getRealmMappings());
+    }
+
     public UserResponse updateUser(UserRequest request, String userId) {
         CredentialRepresentation credential = Credentials
                 .createPasswordCredentials(String.valueOf(UUID.randomUUID()));
@@ -135,7 +151,12 @@ public class UserService {
     public void deleteUser(String userId) {
         RealmResource realmResource = KeycloakConfig.getInstance().realm(szozeRealm);
         UsersResource usersResource = realmResource.users();
-        //TODO: validate
+        JwtAuthenticationToken authenticationToken = (JwtAuthenticationToken) SecurityContextHolder.getContext().getAuthentication();
+        Jwt jwt = (Jwt) authenticationToken.getCredentials();
+        String currentUserId = (String) jwt.getClaims().get("sub");
+        if (currentUserId.equals(userId)) {
+            throw new IllegalArgumentException("Cannot delete current user");
+        }
         usersResource.get(userId).remove();
     }
 
@@ -150,8 +171,6 @@ public class UserService {
         }
         return true;
     }
-
-    //TODO: validateUsername
 
     //TODO: weatherApiKey
 

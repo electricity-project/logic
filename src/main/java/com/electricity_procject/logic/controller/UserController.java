@@ -41,6 +41,11 @@ public class UserController {
         return ResponseEntity.ok(userService.getUser(username));
     }
 
+    @GetMapping("/info/me")
+    public ResponseEntity<User> getCurrentUser() {
+        return ResponseEntity.ok(userService.getCurrentUser());
+    }
+
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/update")
     public ResponseEntity<UserResponse> updateUser(@RequestBody UserRequest request,
@@ -56,7 +61,8 @@ public class UserController {
         return ResponseEntity.ok(userResponse);
     }
 
-    @DeleteMapping
+    @PreAuthorize("hasRole('ADMIN')")
+    @DeleteMapping("/delete")
     public ResponseEntity<?> deleteUser(@RequestParam String userId) {
         userService.deleteUser(userId);
         return ResponseEntity.noContent().build();
