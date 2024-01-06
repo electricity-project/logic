@@ -1,6 +1,7 @@
 package com.electricity_procject.logic.controller;
 
 import com.electricity_procject.logic.domain.PowerStation;
+import com.electricity_procject.logic.domain.PowerStationFilter;
 import com.electricity_procject.logic.domain.PowerStationState;
 import com.electricity_procject.logic.service.PowerStationService;
 import org.springframework.data.domain.Page;
@@ -19,9 +20,10 @@ public class PowerStationController {
         this.powerStationService = powerStationService;
     }
 
-    @GetMapping
-    public ResponseEntity<Page<PowerStation>> getPowerStations(Pageable pageable) {
-        return ResponseEntity.ok(powerStationService.getPowerStations(pageable));
+    @PostMapping
+    public ResponseEntity<Page<PowerStation>> getPowerStations(@RequestBody PowerStationFilter powerStationFilter,
+                                                               Pageable pageable) {
+        return ResponseEntity.ok(powerStationService.getPowerStations(powerStationFilter, pageable));
     }
 
     @GetMapping("/connect")

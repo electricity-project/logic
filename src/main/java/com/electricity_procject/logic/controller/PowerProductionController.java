@@ -24,12 +24,10 @@ public class PowerProductionController {
     @GetMapping
     public ResponseEntity<List<PowerProduction>> getPowerProduction(@RequestParam String ipv6,
                                                                     @RequestParam Integer duration,
-                                                                    @RequestParam AggregationPeriodType aggregationPeriodType,
-                                                                    Pageable pageable) {
+                                                                    @RequestParam AggregationPeriodType aggregationPeriodType) {
         return ResponseEntity.ok(powerProductionService.getPowerProduction(
                 ipv6,
                 duration,
-                aggregationPeriodType,
-                pageable));
+                aggregationPeriodType));
     }
 }
