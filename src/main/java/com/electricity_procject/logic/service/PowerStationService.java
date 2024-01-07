@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -49,20 +50,27 @@ public class PowerStationService {
                 .block();
     }
 
-    //TODO: getPowerStation
-
-    //TODO: validatePowerStation
-
-//    public PowerStation getPowerStation() {
-//        WebClient webClient = WebClient.create(baseUrl);
-//        String endpointUrl = "/calculations-db-access/power-station";
-//        return webClient
-//                .get()
-//                .uri(uriBuilder -> uriBuilder
-//                        .path(endpointUrl)
-//                        .build())
-//                .retrieve()
-//    }
+    public PowerStation getPowerStation(String ipv6) {
+        WebClient webClient = WebClient.create(baseUrl);
+        String endpointUrl = "/calculations-db-access/power-station";
+        return webClient
+                .get()
+                .uri(uriBuilder -> uriBuilder
+                        .path(endpointUrl)
+                        .queryParam("ipv6", ipv6)
+                        .build())
+                .retrieve()
+                .bodyToMono(PowerStation.class)
+                .map(powerStation -> {
+                    if (powerStation.getBladeLength() != null) {
+                        powerStation.setType(PowerStationType.WIND_TURBINE);
+                    } else {
+                        powerStation.setType(PowerStationType.SOLAR_PANEL);
+                    }
+                    return powerStation;
+                })
+                .block();
+    }
 
     public void connectPowerStation(String ipv6) {
         WebClient webClient = WebClient.create(baseUrl);
@@ -74,6 +82,26 @@ public class PowerStationService {
                         .queryParam("ipv6Address", ipv6)
                         .build())
                 .retrieve();
+    }
+
+    public String connectPowerStations(List<String> ipv6List) {
+        StringBuilder message = new StringBuilder();
+        for(String ipv6: ipv6List) {
+            if (!this.validatePowerStation(ipv6)) {
+                message.append("Could not connect powerstation with ipv6: ").append(ipv6).append("\n");
+            }
+            else {
+                this.connectPowerStation(ipv6);
+            }
+        }
+        return message.toString();
+    }
+
+    public boolean validatePowerStation(String ipv6) {
+        PowerStation powerStation = this.getPowerStation(ipv6);
+        return !powerStation.getState().equals("WORKING") &&
+                !powerStation.getState().equals("DAMAGED") &&
+                powerStation != null;
     }
 
     public void disconnectPowerStation(String ipv6) {

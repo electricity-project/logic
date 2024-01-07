@@ -5,7 +5,9 @@ import com.electricity_procject.logic.config.KeycloakConfig;
 import com.electricity_procject.logic.domain.User;
 import com.electricity_procject.logic.domain.UserRequest;
 import com.electricity_procject.logic.domain.UserResponse;
+import com.electricity_procject.logic.domain.WeatherApiKey;
 import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.Response;
 import org.keycloak.admin.client.CreatedResponseUtil;
 import org.keycloak.admin.client.resource.RealmResource;
@@ -18,10 +20,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.BodyInserters;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -32,6 +37,8 @@ import java.util.UUID;
 public class UserService {
     @Value("${keycloak.szoze-realm}")
     String szozeRealm;
+    @Value("${api.base.url}")
+    private String baseUrl;
 
     public UserResponse addUser(UserRequest userRequest) {
         CredentialRepresentation credential = Credentials
@@ -191,7 +198,29 @@ public class UserService {
         return true;
     }
 
-    //TODO: weatherApiKey
+    public void addWeatherApiKey(WeatherApiKey weatherApiKey) {
+        WebClient webClient = WebClient.create(baseUrl);
+        String endpointUrl = "/calculation-db-access/weather-api";
+        webClient
+                .post()
+                .uri(uriBuilder -> uriBuilder
+                        .path(endpointUrl)
+                        .build())
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .body(BodyInserters.fromValue(weatherApiKey))
+                .retrieve();
+    }
 
-    //TODO: setWeatherApiKey
+    public WeatherApiKey getWeatherApiKey() {
+        WebClient webClient = WebClient.create(baseUrl);
+        String endpointUrl = "/calculation-db-access/weather-api";
+        return webClient
+                .get()
+                .uri(uriBuilder -> uriBuilder
+                        .path(endpointUrl)
+                        .build())
+                .retrieve()
+                .bodyToMono(WeatherApiKey.class)
+                .block();
+    }
 }
