@@ -60,6 +60,7 @@ public class UserController {
         return ResponseEntity.ok(userResponse);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/password")
     public ResponseEntity<UserResponse> resetPassword(@RequestParam String userId) {
         UserResponse userResponse = userService.resetPassword(userId);
