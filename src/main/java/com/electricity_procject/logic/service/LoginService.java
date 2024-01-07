@@ -40,6 +40,23 @@ public class LoginService {
                 .block();
     }
 
+    public String refreshAccessToken(String refreshToken) {
+        WebClient webClient = WebClient.create(baseUrl);
+        String endPointUrl = baseUrl + "/realms/szoze-realm/protocol/openid-connect/token";
+        BodyInserters.FormInserter<String> requestBody = BodyInserters
+                .fromFormData("grant_type", "refresh_token")
+                .with("client_id", clientid)
+                .with("client_secret", clientSecret)
+                .with("refresh_token", refreshToken);
+        return webClient.post()
+                .uri(endPointUrl)
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+                .body(requestBody)
+                .retrieve()
+                .bodyToMono(String.class)
+                .block();
+    }
+
     public void logout() {
         RealmResource realmResource = KeycloakConfig.getInstance().realm(szozeRealm);
         UsersResource usersResource = realmResource.users();

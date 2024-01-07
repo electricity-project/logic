@@ -54,10 +54,15 @@ public class UserController {
         return ResponseEntity.ok(userResponse);
     }
 
+    @PostMapping("/my-password")
+    public ResponseEntity<UserResponse> resetMyPassword(@RequestParam String password) {
+        UserResponse userResponse = userService.resetMyPassword(password);
+        return ResponseEntity.ok(userResponse);
+    }
+
     @PostMapping("/password")
-    public ResponseEntity<UserResponse> resetPassword(@RequestParam String userId,
-                                                      @RequestParam String password) {
-        UserResponse userResponse = userService.resetPassword(userId, password);
+    public ResponseEntity<UserResponse> resetPassword(@RequestParam String userId) {
+        UserResponse userResponse = userService.resetPassword(userId);
         return ResponseEntity.ok(userResponse);
     }
 
