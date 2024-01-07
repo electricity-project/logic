@@ -9,6 +9,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -27,9 +28,14 @@ public class PowerStationController {
     }
 
     @GetMapping("/connect")
-    public ResponseEntity<Void> connectPowerStation(@RequestParam String ipv6) {
-        powerStationService.connectPowerStation(ipv6);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<String> connectPowerStations(@RequestBody List<String> ipv6List) {
+        String message = powerStationService.connectPowerStations(ipv6List);
+        return ResponseEntity.ok(message);
+    }
+
+    @GetMapping("/validate")
+    public ResponseEntity<Boolean> validatePowerStation(@RequestParam String ipv6) {
+        return ResponseEntity.ok(powerStationService.validatePowerStation(ipv6));
     }
 
     @GetMapping("/disconnect")

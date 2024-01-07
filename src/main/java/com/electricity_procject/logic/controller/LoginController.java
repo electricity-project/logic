@@ -19,6 +19,11 @@ public class LoginController {
         return ResponseEntity.ok(loginService.login(loginRequest));
     }
 
+    @PostMapping("/refresh-token")
+    public ResponseEntity<String> refreshToken(@RequestParam String token) {
+        return ResponseEntity.ok(loginService.refreshAccessToken(token));
+    }
+
     @GetMapping("/logout")
     public ResponseEntity<Void> logout() {
         loginService.logout();

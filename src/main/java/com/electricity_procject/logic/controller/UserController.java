@@ -3,6 +3,7 @@ package com.electricity_procject.logic.controller;
 import com.electricity_procject.logic.domain.User;
 import com.electricity_procject.logic.domain.UserRequest;
 import com.electricity_procject.logic.domain.UserResponse;
+import com.electricity_procject.logic.domain.WeatherApiKey;
 import com.electricity_procject.logic.service.UserService;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.ClientErrorException;
@@ -54,10 +55,16 @@ public class UserController {
         return ResponseEntity.ok(userResponse);
     }
 
+    @PostMapping("/my-password")
+    public ResponseEntity<UserResponse> resetMyPassword(@RequestParam String password) {
+        UserResponse userResponse = userService.resetMyPassword(password);
+        return ResponseEntity.ok(userResponse);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/password")
-    public ResponseEntity<UserResponse> resetPassword(@RequestParam String userId,
-                                                      @RequestParam String password) {
-        UserResponse userResponse = userService.resetPassword(userId, password);
+    public ResponseEntity<UserResponse> resetPassword(@RequestParam String userId) {
+        UserResponse userResponse = userService.resetPassword(userId);
         return ResponseEntity.ok(userResponse);
     }
 
@@ -71,6 +78,19 @@ public class UserController {
     @PostMapping("/validate")
     public ResponseEntity<Boolean> validateUsername(@RequestParam String username) {
         return ResponseEntity.ok(userService.validateUsername(username));
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/weather-api-key")
+    public ResponseEntity<WeatherApiKey> getWeatherApiKey() {
+        return ResponseEntity.ok(userService.getWeatherApiKey());
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/weather-api-key")
+    public ResponseEntity<Void> addWeatherApiKey(@RequestBody WeatherApiKey weatherApiKey) {
+        userService.addWeatherApiKey(weatherApiKey);
+        return ResponseEntity.ok().build();
     }
 
     @ExceptionHandler({IllegalArgumentException.class, BadRequestException.class, ClientErrorException.class})

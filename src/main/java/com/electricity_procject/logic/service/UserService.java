@@ -5,7 +5,9 @@ import com.electricity_procject.logic.config.KeycloakConfig;
 import com.electricity_procject.logic.domain.User;
 import com.electricity_procject.logic.domain.UserRequest;
 import com.electricity_procject.logic.domain.UserResponse;
+import com.electricity_procject.logic.domain.WeatherApiKey;
 import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.Response;
 import org.keycloak.admin.client.CreatedResponseUtil;
 import org.keycloak.admin.client.resource.RealmResource;
@@ -18,10 +20,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.BodyInserters;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -32,6 +37,8 @@ import java.util.UUID;
 public class UserService {
     @Value("${keycloak.szoze-realm}")
     String szozeRealm;
+    @Value("${api.base.url}")
+    private String baseUrl;
 
     public UserResponse addUser(UserRequest userRequest) {
         CredentialRepresentation credential = Credentials
@@ -46,11 +53,14 @@ public class UserService {
 
         Response savedUser = usersResource.create(user);
 
-        RoleRepresentation userRole = realmResource.roles().get(userRequest.role().toString()).toRepresentation();
+        List<RoleRepresentation> roles = new ArrayList<>();
+        roles.add(realmResource.roles().get(userRequest.role().toString()).toRepresentation());
+        roles.add(realmResource.roles().get("USER_SET_PASSWORD").toRepresentation());
+
 
         if(savedUser.getStatus() == Response.Status.CREATED.getStatusCode()) {
             String userId = CreatedResponseUtil.getCreatedId(savedUser);
-            return getUserResponse(userId, usersResource, user, userRole);
+            return getUserResponse(userId, usersResource, user, roles);
         }
         throw new IllegalArgumentException("Could not add user");
     }
@@ -98,26 +108,26 @@ public class UserService {
     }
 
     public UserResponse updateUser(UserRequest request, String userId) {
-        CredentialRepresentation credential = Credentials
-                .createPasswordCredentials(String.valueOf(UUID.randomUUID()));
         RealmResource realmResource = KeycloakConfig.getInstance().realm(szozeRealm);
         UsersResource usersResource = realmResource.users();
         UserRepresentation user = usersResource.get(userId).toRepresentation();
         user.setUsername(request.username());
-        user.setCredentials(Collections.singletonList(credential));
         user.setEnabled(true);
 
         usersResource.get(userId).update(user);
 
         RoleRepresentation userRole = realmResource.roles().get(request.role().toString()).toRepresentation();
 
-        return getUserResponse(userId, usersResource, user, userRole);
+        return getUserResponse(userId, usersResource, user, Collections.singletonList(userRole));
 
     }
 
-    private UserResponse getUserResponse(String userId, UsersResource usersResource, UserRepresentation user, RoleRepresentation userRole) {
+    private UserResponse getUserResponse(String userId,
+                                         UsersResource usersResource,
+                                         UserRepresentation user,
+                                         List<RoleRepresentation> roles) {
         UserResource userResource = usersResource.get(userId);
-        userResource.roles().realmLevel().add(Collections.singletonList(userRole));
+        userResource.roles().realmLevel().add(roles);
         UserRepresentation savedUserRepresentation = usersResource.get(userId).toRepresentation();
         return new UserResponse(
                 savedUserRepresentation.getId(),
@@ -126,16 +136,32 @@ public class UserService {
                 usersResource.get(userId).roles().getAll().getRealmMappings());
     }
 
-    public UserResponse resetPassword(String userId, String password) {
+    public UserResponse resetPassword(String userId) {
+        CredentialRepresentation credential = Credentials
+                .createPasswordCredentials(String.valueOf(UUID.randomUUID()));
+        RealmResource realmResource = KeycloakConfig.getInstance().realm(szozeRealm);
+        UsersResource usersResource = realmResource.users();
+        RoleRepresentation setPasswordRole = realmResource.roles().get("USER_SET_PASSWORD").toRepresentation();
+        UserResource userResource = usersResource.get(userId);
+        userResource.roles().realmLevel().add(Collections.singletonList(setPasswordRole));
+        return getUserResponsePassword(userId, credential, usersResource);
+    }
+
+    public UserResponse resetMyPassword(String password) {
+        JwtAuthenticationToken authenticationToken = (JwtAuthenticationToken) SecurityContextHolder.getContext().getAuthentication();
+        Jwt jwt = (Jwt) authenticationToken.getCredentials();
+        String userId = (String) jwt.getClaims().get("sub");
         CredentialRepresentation credential = Credentials
                 .createPasswordCredentials(password);
         RealmResource realmResource = KeycloakConfig.getInstance().realm(szozeRealm);
         UsersResource usersResource = realmResource.users();
         RoleRepresentation oldRole = realmResource.roles().get("USER_SET_PASSWORD").toRepresentation();
-        RoleRepresentation userRole = realmResource.roles().get("USER").toRepresentation();
         UserResource userResource = usersResource.get(userId);
         userResource.roles().realmLevel().remove(Collections.singletonList(oldRole));
-        userResource.roles().realmLevel().add(Collections.singletonList(userRole));
+        return getUserResponsePassword(userId, credential, usersResource);
+    }
+
+    private UserResponse getUserResponsePassword(String userId, CredentialRepresentation credential, UsersResource usersResource) {
         UserRepresentation user = usersResource.get(userId).toRepresentation();
         user.setCredentials(Collections.singletonList(credential));
         usersResource.get(userId).update(user);
@@ -172,7 +198,29 @@ public class UserService {
         return true;
     }
 
-    //TODO: weatherApiKey
+    public void addWeatherApiKey(WeatherApiKey weatherApiKey) {
+        WebClient webClient = WebClient.create(baseUrl);
+        String endpointUrl = "/calculation-db-access/weather-api";
+        webClient
+                .post()
+                .uri(uriBuilder -> uriBuilder
+                        .path(endpointUrl)
+                        .build())
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .body(BodyInserters.fromValue(weatherApiKey))
+                .retrieve();
+    }
 
-    //TODO: setWeatherApiKey
+    public WeatherApiKey getWeatherApiKey() {
+        WebClient webClient = WebClient.create(baseUrl);
+        String endpointUrl = "/calculation-db-access/weather-api";
+        return webClient
+                .get()
+                .uri(uriBuilder -> uriBuilder
+                        .path(endpointUrl)
+                        .build())
+                .retrieve()
+                .bodyToMono(WeatherApiKey.class)
+                .block();
+    }
 }
